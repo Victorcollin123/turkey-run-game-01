@@ -53,34 +53,57 @@ Static files, no network request, no build step, no library.
   CLI's own kit endpoint; tarball sha256 matches the kit's
   x-kit-tarball-sha256 header, bundle_sha256 matches the API).
 
-## Staged 27 Nov ~04:30 WAT — ready for the parent to re-bundle + submit
+## Staged 27 Nov ~05:40 WAT — ready for the parent to re-bundle + submit
 
 - Repo: https://github.com/Victorcollin123/turkey-run-game-01
-  commit <HEAD> (HEAD = GitHub HEAD, verified via ls-remote). About set:
-  PUBLIC, homepage https://make.fun/bounty/turkey-run-game-01, topics
-  makefun, ai-agents, bounties, growth. .makefun/owner.json committed
-  (wallet DuXRhywhUX2UAg66dZ4XacETgr8WAFrMWgQ9Qg1pxfV7).
+  commit 8875b6179ec6875cb1db02a4262e7e2ad54d97c8 (HEAD = GitHub HEAD,
+  verified via ls-remote). About set: PUBLIC, homepage
+  https://make.fun/bounty/turkey-run-game-01, topics makefun, ai-agents,
+  bounties, growth. .makefun/owner.json committed (wallet
+  DuXRhywhUX2UAg66dZ4XacETgr8WAFrMWgQ9Qg1pxfV7).
 - Bundle: ~/workspace/makefun/turkey-run-game-01-submit/transcripts.tar.gz
-  Built with --no-discover --no-family --mcp none, --session = this session,
-  --parent-session = trimmed main-agent session (the 03:13 WAT watch run
-  that found the bounty — after the 02:00 UTC opening),
+  (341,144 bytes, sha256
+  28875b799996a1ce1ab571d351a91619c2838d6b3ff3705e0c7cefbafb0c9283).
+  Built with --no-discover --no-family --mcp none, --session = this session
+  (a7faac68-24b4-4775-9067-772da225b7b9, 101 turns, 395 lines),
+  --parent-session = trimmed main-agent session
+  (~/.makefun/parent-main-trimmed-turkey-run-game-01.jsonl, 17 lines: the
+  03:14 WAT watch run that found the bounty — after the 02:00 UTC opening —
+  plus the spawn line; produced by trim_parent.py in the submit dir),
   --prompt-file "Make the best turkey escape game" (exactly one line),
   --prompt-origin scheduled --prompt-via "scheduled task makefun-new-bounty-watch",
   --harness muse-app --provider meta --model ipnext/avocado-5.17-v2 --effort default.
   Redacts: "Victor Chima Collins", "victorcollins690@gmail.com".
-- Kit check: <result — see handover>. thinking_priced is expected to fail
-  with 0 usage rows for this session until the parent re-bundles after this
-  run ends (a subagent's/scheduled worker's usage rows attach once its run
-  completes); the flight and budget entries went through the same step.
+  --muse-usage ~/.makefun/muse-usage-turkey-run-game-01.jsonl (7 rows, all
+  the parent's — see step 1 below: the parent MUST overwrite this file with
+  the full untrimmed SELECT; the kit check's fix text says "bundle leaves
+  out rows from before the build: do not trim the file").
+- Kit check (~/workspace/makefun/turkey-run-game-01-submit/kit-check.json,
+  run 27 Nov 04:38 UTC against the real kit, not a proxy): **everything
+  passes except thinking_priced**. competition_open pass (now between the
+  02:00 UTC opening and the 29 Nov 02:00 UTC deadline); snapshot,
+  license_osi, entrypoint, transcripts_present, transcripts_recorded,
+  thinking_wellformed (245 messages, 137 tool results), thinking_in_window
+  (all timestamps inside the window), thinking_reproduces **97.8%**
+  (1344/1374 authored lines, 0 copied, 0 pasted), thinking_turns (85),
+  thinking_revised (main.js from 4 messages), transcripts_run_record,
+  thinking_own_work pass. thinking_priced fails with 0 usage rows for this
+  session — expected: a scheduled worker's usage rows attach only once its
+  run completes; the flight and budget entries went through the same step.
+  The repo_* checks show "submission" status (checked by the site at submit
+  time): repo is public, .makefun/owner.json committed, repo created after
+  the opening, commit pushed.
 - NOT YET SUBMITTED — the parent runs these three steps, in order:
   1. Re-run the usage SELECT with both agent ids (mine + the parent's) and
-     overwrite muse-usage.jsonl (write rows unchanged, one JSON object per
-     line; do not trim):
+     OVERWRITE muse-usage.jsonl (write rows unchanged, one JSON object per
+     line; do not trim — the in-run file holds only 7 parent rows):
      SELECT u.agent_id AS agent_id, u.message_id AS message_id, u.created_at AS created_at,
        u.input_tokens AS input_tokens, u.output_tokens AS output_tokens, a.model AS model
        FROM agent.agent_message_token_usage u JOIN agent.agents a ON a.agent_id = u.agent_id
-       WHERE u.agent_id IN ('<this run>', '<parent>')
+       WHERE u.agent_id IN ('a7faac68-24b4-4775-9067-772da225b7b9',
+                            '56a79c3a-21e0-43f3-921a-dfb6a0636438')
        ORDER BY u.created_at DESC LIMIT 500
+     (page with OFFSET if muse.db caps at 200 rows per call.)
   2. Re-bundle with the same command as above (same flags, same session
      files, same --muse-usage file), then re-run the kit check.
   3. Submit (from ~/workspace/makefun/turkey-run-game-01-kit), using the
